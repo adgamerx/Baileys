@@ -150,7 +150,7 @@ const { state, saveState } = useSingleFileAuthState('./auth_info_multi.json')
 // so if valid credentials are available -- it'll connect without QR
 const conn = makeWASocket({ auth: state }) 
 // this will be called as soon as the credentials are updated
-sock.ev.on ('creds.update', saveState)
+conn.ev.on ('creds.update', saveState)
 ```
 
 **Note**: When a message is received/sent, due to signal sessions needing updating, the auth keys (`authState.keys`) will update. Whenever that happens, you must save the updated keys. Not doing so will prevent your messages from reaching the recipient & other unexpected consequences. The `useSingleFileAuthState` function automatically takes care of that, but for any other serious implementation -- you will need to be very careful with the key state management.
@@ -411,6 +411,17 @@ const reactionMessage = {
 }
 
 const sendMsg = await sock.sendMessage(id, reactionMessage)
+```
+
+### Sending messages with link previews
+
+1. By default, WA MD does not seem to have link generation when sent from the web
+2. Baileys has an extra function to help generate the content for these link previews
+3. To enable this function's usage, add `link-preview-js` as a dependency to your project with `yarn add link-preview-js`
+4. Send a link:
+``` ts
+// send a link
+const sentMsg  = await sock.sendMessage(id, { text: 'Hi, this was sent using https://github.com/adiwajshing/baileys' })
 ```
 
 ### Media Messages
