@@ -1,5 +1,6 @@
 import type { proto } from '../../WAProto'
 import type { Contact } from './Contact'
+import type { MinimalMessage } from './Message'
 
 export type KeyPair = { public: Uint8Array, private: Uint8Array }
 export type SignedKeyPair = { keyPair: KeyPair, signature: Uint8Array, keyId: number }
@@ -45,6 +46,10 @@ export type AuthenticationCreds = SignalCreds & {
 
     lastAccountSyncTimestamp?: number
     platform?: string
+
+    processedHistoryMessages: MinimalMessage[]
+    /** number of times history & app state has been synced */
+    accountSyncCounter: number
     accountSettings: AccountSettings
 }
 
@@ -53,7 +58,7 @@ export type SignalDataTypeMap = {
     'session': any
     'sender-key': any
     'sender-key-memory': { [jid: string]: boolean }
-    'app-state-sync-key': proto.IAppStateSyncKeyData
+    'app-state-sync-key': proto.Message.IAppStateSyncKeyData
     'app-state-sync-version': LTHashState
 }
 
@@ -64,12 +69,18 @@ type Awaitable<T> = T | Promise<T>
 export type SignalKeyStore = {
     get<T extends keyof SignalDataTypeMap>(type: T, ids: string[]): Awaitable<{ [id: string]: SignalDataTypeMap[T] }>
     set(data: SignalDataSet): Awaitable<void>
+    /** clear all the data in the store */
+    clear?(): Awaitable<void>
 }
 
 export type SignalKeyStoreWithTransaction = SignalKeyStore & {
     isInTransaction: () => boolean
     transaction(exec: () => Promise<void>): Promise<void>
-    prefetch<T extends keyof SignalDataTypeMap>(type: T, ids: string[]): Promise<void>
+}
+
+export type TransactionCapabilityOptions = {
+	maxCommitRetries: number
+	delayBetweenTriesMs: number
 }
 
 export type SignalAuthState = {

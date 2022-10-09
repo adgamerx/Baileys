@@ -4,29 +4,15 @@ export * from './Chat'
 export * from './Contact'
 export * from './State'
 export * from './Message'
-export * from './Legacy'
 export * from './Socket'
 export * from './Events'
 export * from './Product'
+export * from './Call'
 
-import type NodeCache from 'node-cache'
-import { proto } from '../../WAProto'
 import { AuthenticationState } from './Auth'
-import { CommonSocketConfig } from './Socket'
+import { SocketConfig } from './Socket'
 
-export type SocketConfig = CommonSocketConfig<AuthenticationState> & {
-    /** provide a cache to store a user's device list */
-    userDevicesCache?: NodeCache
-    /** map to store the retry counts for failed messages */
-    msgRetryCounterMap?: { [msgId: string]: number }
-    /** width for link preview images */
-    linkPreviewImageThumbnailWidth: number
-    /**
-     * fetch a message from your store
-     * implement this so that messages failed to send (solves the "this message can take a while" issue) can be retried
-     * */
-    getMessage: (key: proto.IMessageKey) => Promise<proto.IMessage | undefined>
-}
+export type UserFacingSocketConfig = Partial<SocketConfig> & { auth: AuthenticationState }
 
 export enum DisconnectReason {
 	connectionClosed = 428,
@@ -54,19 +40,16 @@ export type WABusinessHoursConfig = {
 
 export type WABusinessProfile = {
     description: string
-    email: string
+    email: string | undefined
     business_hours: {
         timezone?: string
         config?: WABusinessHoursConfig[]
         business_config?: WABusinessHoursConfig[]
     }
     website: string[]
-    categories: {
-        id: string
-        localized_display_name: string
-    }[]
+    category?: string
     wid?: string
+    address?: string
 }
-
 
 export type CurveKeyPair = { private: Uint8Array; public: Uint8Array }
